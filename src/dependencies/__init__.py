@@ -1,2 +1,2 @@
 from .services import get_document_service
-from .providers import get_file_storage, get_loader, get_splitter
+from .providers import get_file_storage, get_loader, get_splitter, get_embedding

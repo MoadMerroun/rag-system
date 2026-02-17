@@ -1,7 +1,6 @@
 from pathlib import Path
 
-from ..infrastructure import LocalFileStorage
-from ..infrastructure import LangChainLoader, LangChainSplitter
+from ..infrastructure import LocalFileStorage, LangChainLoader, LangChainSplitter, OpenAIEmbedding
 
 def get_file_storage():
     uploads_dir = Path( "uploads" )
@@ -24,3 +23,7 @@ def get_splitter():
     )
 
     return langChainSplitter
+
+def get_embedding():
+    openaiembedding = OpenAIEmbedding()
+    return openaiembedding

@@ -1,2 +1,3 @@
 from .local_file_storage import LocalFileStorage
 from .langchain_document_processing import LangChainLoader, LangChainSplitter
+from .openai_embedding import OpenAIEmbedding
