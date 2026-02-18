@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from ..infrastructure import LocalFileStorage, LangChainLoader, LangChainSplitter, OpenAIEmbedding, ChromaVectorStore
+from ..infrastructure import LocalFileStorage, LangChainLoader, LangChainSplitter, OpenAIEmbedding, ChromaVectorStore, OpenAILlm
+from ..prompts import RAG_PROMPT_TEMPLATE
 
 def get_file_storage():
     uploads_dir = Path( "uploads" )
@@ -31,3 +32,10 @@ def get_embedding():
 def get_vector_store():
     chromaVectorStore = ChromaVectorStore()
     return chromaVectorStore
+
+def get_llm_provider():
+    llmProvider = OpenAILlm()
+    return llmProvider
+
+def get_prompt_template():
+   return RAG_PROMPT_TEMPLATE
