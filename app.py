@@ -25,33 +25,42 @@ def upload_document(api_url: str, uploaded_file) -> tuple[bool, str]:
         response.raise_for_status()
         payload = response.json()
 
-        if isinstance(payload, list):
-            return True, f"Upload complete. Created {len(payload)} embeddings."
-        return True, "Upload complete."
+        return True, f"Uploaded {payload['filename']}: {payload['chunks']} chunks indexed."
     except requests.RequestException as exc:
         return False, f"Upload failed: {exc}"
     except json.JSONDecodeError:
         return False, "Upload failed: API returned a non-JSON response."
 
 
+def format_answer(payload: dict) -> str:
+    answer = payload["answer"]
+    sources = payload.get("sources", [])
+    if not sources:
+        return answer
+
+    lines = []
+    for source in sources:
+        page = source.get("page")
+        # PyPDF pages are 0-based; show them 1-based to the user.
+        label = source["filename"] if page is None else f"{source['filename']} (page {page + 1})"
+        if label not in lines:
+            lines.append(label)
+    return answer + "\n\n**Sources:**\n" + "\n".join(f"- {line}" for line in lines)
+
+
 def ask_question(api_url: str, question: str) -> tuple[bool, str]:
     try:
         response = requests.post(
             f"{api_url}/ask",
-            params={"message": question},
+            json={"question": question},
             timeout=120,
         )
         response.raise_for_status()
-
-        try:
-            payload = response.json()
-            if isinstance(payload, str):
-                return True, payload
-            return True, json.dumps(payload, ensure_ascii=True, indent=2)
-        except json.JSONDecodeError:
-            return True, response.text
+        return True, format_answer(response.json())
     except requests.RequestException as exc:
         return False, f"Request failed: {exc}"
+    except json.JSONDecodeError:
+        return False, "Request failed: API returned a non-JSON response."
 
 
 def main() -> None:
@@ -81,10 +90,7 @@ def main() -> None:
     if question:
         st.session_state.chat_history.append({"role": "user", "content": question})
         ok, answer = ask_question(api_url, question)
-        if ok:
-            st.session_state.chat_history.append({"role": "assistant", "content": answer})
-        else:
-            st.session_state.chat_history.append({"role": "assistant", "content": answer})
+        st.session_state.chat_history.append({"role": "assistant", "content": answer})
 
     for message in st.session_state.chat_history:
         with st.chat_message(message["role"]):

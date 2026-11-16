@@ -13,30 +13,37 @@ class DocumentService:
         self.vectorStore = vectorStore
 
     def process( self, file ):
-        file_path = self.upload( file )
+        filename = file.filename or "upload.pdf"
+        file_path = self.upload( file, filename )
         document = self.load( file_path )
         chunks = self.split( document )
-        documents, metadatas, ids = self._prepare_chunks( chunks )
+
+        # A PDF with no extractable text (e.g. a scan) produces no chunks.
+        if not chunks:
+            return 0
+
+        documents, metadatas, ids = self._prepare_chunks( chunks, filename )
         embeddings = self.embeddingService.embed_documents( documents )
         self.vectorStore.save( vectors = embeddings, documents = documents, metadatas = metadatas, ids = ids )
 
-        return embeddings
+        return len( chunks )
 
-    def _prepare_chunks( self, chunks ):
+    def _prepare_chunks( self, chunks, filename ):
         documents = []
         metadatas = []
         ids = []
 
         for i, chunk in enumerate( chunks ):
             documents.append( chunk.page_content )
-            metadatas.append( chunk.metadata )
+            # Keep the original file name so answers can cite it as a source.
+            metadatas.append( { **chunk.metadata, "filename": filename } )
             ids.append( f"{chunk.metadata.get('source')}-{chunk.metadata.get('page', 0)}-{i}" )
 
         return documents, metadatas, ids
 
-    def upload( self, file ):
+    def upload( self, file, filename ):
         content = file.file.read()
-        file_path = self.fileStorage.save( file_name = file.filename or "upload.pdf", content = content )
+        file_path = self.fileStorage.save( file_name = filename, content = content )
 
         return file_path
 

@@ -19,7 +19,7 @@ class ChromaVectorStore:
             metadatas = metadatas,
         )
 
-    def similarity_search( self, vectors ):
+    def similarity_search( self, vectors, k = 4 ):
         collection = self.chromaVectorStore.get_collection( name = self.collection_name )
 
-        return collection.query( query_embeddings = vectors )
+        return collection.query( query_embeddings = vectors, n_results = k )
