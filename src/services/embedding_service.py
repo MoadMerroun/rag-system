@@ -4,8 +4,8 @@ class EmbeddingService:
     def __init__( self, embeddingProvider ):
         self.embeddingProvider = embeddingProvider
 
-    def embed_chunks( self, chunks ):
-        embeddings = self.embeddingProvider.embed_chunks( chunks )
+    def embed_documents( self, documents ):
+        embeddings = self.embeddingProvider.embed_documents( documents )
         return embeddings
 
     def embed_query( self, query ):

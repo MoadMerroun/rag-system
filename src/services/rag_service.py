@@ -8,13 +8,13 @@ class RagService:
         self.embeddingService = embeddingService
         self.vectorStore = vectorStore
 
-    def ask( self, message ):
-        embedding = self.embeddingService.embed_query( message )
+    def ask( self, question ):
+        embedding = self.embeddingService.embed_query( question )
 
-        chunks = self.vectorStore.similarity_search( [ embedding ] )
+        chunks = self.vectorStore.similarity_search( embedding )
 
-        prompt = self.llmService.build_prompt( message, chunks )
+        prompt = self.llmService.build_prompt( question, [ chunk.text for chunk in chunks ] )
 
-        response = self.llmService.generate_response( prompt )
+        answer = self.llmService.generate_response( prompt )
 
-        return response
+        return answer, chunks
